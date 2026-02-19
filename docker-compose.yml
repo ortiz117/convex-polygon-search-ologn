@@ -1,7 +1,7 @@
 services:
   backend:
     build:
-      context: ./backend
+      context: ./poligonos
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
@@ -9,7 +9,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./poligonosfront
       dockerfile: Dockerfile
     ports:
       - "5173:5173"
