@@ -5,6 +5,9 @@
     let testPoint: {x: number, y: number} | null = null;
     let result: { inside: boolean; message: string } | null = null;
     let loading = false;
+    
+    // CAMBIO 1: Variable para controlar qué algoritmo usamos
+    let usePdfAlgorithm = false;
 
     // Manejar clics en el plano
     function handleCanvasClick(e: MouseEvent) {
@@ -13,7 +16,7 @@
         const x = Math.round(e.clientX - rect.left);
         const y = Math.round(e.clientY - rect.top);
 
-        // Lógica para el pentágono (5 puntos) según ejercicio 2.5
+        // Lógica para el pentágono (5 puntos) según ejercicio
         if (vertices.length < 5) {
             vertices = [...vertices, { x, y }];
         } else if (!testPoint) {
@@ -23,22 +26,31 @@
     }
 
     async function checkPoint() {
-    if (!testPoint || vertices.length < 3) return;
-    loading = true;
-    try {
-        const res = await fetch('http://localhost:8080/api/polygon/check', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            // CAMBIO AQUÍ: Enviamos "point" en lugar de "testPoint"
-            body: JSON.stringify({ vertices, point: testPoint }) 
-        });
-        result = await res.json();
-    } catch (err) {
-        console.error("Error conectando al backend bro:", err);
-    } finally {
-        loading = false;
+        if (!testPoint || vertices.length < 3) return;
+        loading = true;
+        try {
+            // CAMBIO 2: Seleccionamos la URL dependiendo del switch
+            const endpoint = usePdfAlgorithm ? '/api/polygon/check-pdf' : '/api/polygon/check';
+            
+            const res = await fetch(`http://localhost:8080${endpoint}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ vertices, point: testPoint }) 
+            });
+            result = await res.json();
+        } catch (err) {
+            console.error("Error conectando al backend bro:", err);
+        } finally {
+            loading = false;
+        }
     }
-}
+
+    // CAMBIO 3: Magia de Svelte. Si cambias el switch y ya hay un punto, recalcula solo.
+    function handleToggle() {
+        if (testPoint) {
+            checkPoint();
+        }
+    }
 
     function reset() {
         vertices = [];
@@ -73,6 +85,16 @@
                 </h2>
                 
                 <div class="space-y-4">
+                    <div class="flex items-center justify-between p-3 bg-slate-950/50 rounded-xl border border-white/5">
+                        <span class="text-xs text-slate-400 font-mono">
+                            Algo: <span class="text-cyan-400">{usePdfAlgorithm ? 'PDF (Translación)' : 'Clásico (Vectores)'}</span>
+                        </span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" bind:checked={usePdfAlgorithm} on:change={handleToggle} class="sr-only peer">
+                            <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-300 after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-cyan-500"></div>
+                        </label>
+                    </div>
+
                     <div class="flex justify-between items-center p-3 bg-slate-950/50 rounded-xl border border-white/5">
                         <span class="text-slate-400 text-sm">Vértices:</span>
                         <span class="font-mono text-cyan-400 font-bold">{vertices.length} / 5</span>
@@ -155,7 +177,6 @@
 </div>
 
 <style>
-    /* Estilo adicional para que el cursor se vea cool */
     svg {
         touch-action: none;
     }
