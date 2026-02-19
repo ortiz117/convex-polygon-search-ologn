@@ -76,8 +76,8 @@ sequenceDiagram
 ### 2.3 Diseño de Interfaz Gráfica (GUI)
 La interfaz de usuario fue diseñada para ser intuitiva y reactiva. Permite la entrada de coordenadas mediante clics sobre un lienzo cartesiano interactivo.
 
-![Punto al interior](./Assets/dentro.png)
-![Punto al exterior](./Assets/fuera.png)
+![Punto al interior](./Assets/Dentro.png)
+![Punto al exterior](./Assets/Fuera.png)
 
 ---
 
