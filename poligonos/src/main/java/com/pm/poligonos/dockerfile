@@ -1,0 +1,15 @@
+# Etapa 1: Construcción (Compila el .jar)
+FROM maven:3.9.6-eclipse-temurin-21-alpine AS builder
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+# Compilamos saltando los tests para que sea más rápido
+RUN mvn clean package -DskipTests 
+
+# Etapa 2: Ejecución (Corre el .jar en un contenedor ligero)
+FROM eclipse-temurin:21-jdk-alpine
+WORKDIR /app
+# Copiamos el .jar generado en la etapa anterior
+COPY --from=builder /app/target/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
